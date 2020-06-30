@@ -11,14 +11,20 @@ const LOG_EVENT_MONSTER_ATTACK = 'MONSTER_ATTACK';
 const LOG_EVENT_PLAYER_HEAL = 'PLAYER_HEAL';
 const LOG_EVENT_GAME_OVER = 'GAME_OVER';
 
-const enteredValue = prompt('Maximum life for you and the monster.', '100');
-
-let chosenMaxLife = parseInt(enteredValue);
 let battleLog = [];
+let lasLoggedEntry;
 
-if (isNaN(chosenMaxLife) || chosenMaxLife <= 0) {
-    chosenMaxLife = 100;
+function getMaxLifeValues() {
+    const enteredValue = prompt('Maximum life for you and the monster.', '100');
+
+    const parsedValue = parseInt(enteredValue);
+    if (isNaN(parsedValue) || parsedValue <= 0) {
+        throw { message: 'Invalid user input, not a number!' };
+    }
+    return parsedValue;
 }
+
+let chosenMaxLife = getMaxLifeValues();
 
 let currentMonsterHealth = chosenMaxLife;
 let currentPlayerHealth = chosenMaxLife;
@@ -26,47 +32,54 @@ let hasBonusLife = true;
 
 adjustHealthBars(chosenMaxLife);
 
-function writeToLog(ev, val, currentMonsterHealth, currentPlayerHealth) {
-    let logEntry;
-    if (ev === LOG_EVENT_PLAYER_ATTACK) {
-        logEntry = {
-            event: ev,
-            value: val,
-            target: 'MONSTER',
-            finalMonsterHealth: currentMonsterHealth,
-            finalPlayerHealth: currentPlayerHealth
-        };
-    } else if (ev === LOG_EVENT_PLAYER_STRONG_ATTACK) {
-        logEntry = {
-            event: ev,
-            value: val,
-            target: 'MONSTER',
-            finalMonsterHealth: currentMonsterHealth,
-            finalPlayerHealth: currentPlayerHealth
-        };
-    } else if (ev === LOG_EVENT_MONSTER_ATTACK) {
-        logEntry = {
-            event: ev,
-            value: val,
-            target: 'PLAYER',
-            finalMonsterHealth: currentMonsterHealth,
-            finalPlayerHealth: currentPlayerHealth
-        };
-    } else if (ev === LOG_EVENT_PLAYER_HEAL) {
-        logEntry = {
-            event: ev,
-            value: val,
-            target: 'PLAYER',
-            finalMonsterHealth: currentMonsterHealth,
-            finalPlayerHealth: currentPlayerHealth
-        };
-    } else if (ev === LOG_EVENT_GAME_OVER) {
-        logEntry = {
-            event: ev,
-            value: val,
-            finalMonsterHealth: currentMonsterHealth,
-            finalPlayerHealth: currentPlayerHealth
-        };
+function writeToLog(ev, val, MonsterHealth, PlayerHealth) {
+    let logEntry = {
+        event: ev,
+        value: val,
+        finalMonsterHealth: MonsterHealth,
+        finalPlayerHealth: PlayerHealth
+    };
+    switch (ev) {
+        case LOG_EVENT_PLAYER_ATTACK:
+            logEntry.target = 'MONSTER';
+            break;
+        case LOG_EVENT_PLAYER_STRONG_ATTACK:
+            logEntry = {
+                event: ev,
+                value: val,
+                target: 'MONSTER',
+                finalMonsterHealth: MonsterHealth,
+                finalPlayerHealth: PlayerHealth
+            };
+            break;
+        case LOG_EVENT_MONSTER_ATTACK:
+            logEntry = {
+                event: ev,
+                value: val,
+                target: 'PLAYER',
+                finalMonsterHealth: MonsterHealth,
+                finalPlayerHealth: PlayerHealth
+            };
+            break;
+        case LOG_EVENT_PLAYER_HEAL:
+            logEntry = {
+                event: ev,
+                value: val,
+                target: 'PLAYER',
+                finalMonsterHealth: MonsterHealth,
+                finalPlayerHealth: PlayerHealth
+            };
+            break;
+        case LOG_EVENT_GAME_OVER:
+            logEntry = {
+                event: ev,
+                value: val,
+                finalMonsterHealth: MonsterHealth,
+                finalPlayerHealth: PlayerHealth
+            };
+            break;
+        default:
+            logEntry = {};
     }
     battleLog.push(logEntry);
 }
@@ -167,6 +180,9 @@ function healPlayerHandler() {
 }
 
 function printLogHandler() {
+    for (let i = 0; i < 3; i++) {
+        console.log('-----------');
+    }
     console.log(battleLog);
 }
 
